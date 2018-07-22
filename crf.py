@@ -60,7 +60,7 @@ class CRF(object):
         self.BS = np.zeros((self.n, self.n))
 
     def SGD(self, train, dev, file,
-            epochs, batch_size, interval, eta, decay, c,
+            epochs, batch_size, interval, eta, decay, lmbda,
             anneal, regularize, shuffle):
         # 记录更新次数
         count = 0
@@ -78,7 +78,7 @@ class CRF(object):
                 random.shuffle(train)
             # 设置L2正则化系数
             if not regularize:
-                c = 0
+                lmbda = 0
             # 按照指定大小对数据分割批次
             batches = [train[i:i + batch_size]
                        for i in range(0, len(train), batch_size)]
@@ -86,10 +86,10 @@ class CRF(object):
             # 根据批次数据更新权重
             for batch in batches:
                 if not anneal:
-                    self.update(batch, c, nt, eta)
+                    self.update(batch, lmbda, nt, eta)
                 # 设置学习速率的指数衰减
                 else:
-                    self.update(batch, c, nt, eta * decay ** (count / nb))
+                    self.update(batch, lmbda, nt, eta * decay ** (count / nb))
                 count += 1
 
             print("Epoch %d / %d: " % (epoch, epochs))
@@ -110,7 +110,7 @@ class CRF(object):
               (max_precision, max_e))
         print("mean time of each epoch is %ss" % (total_time / (epoch + 1)))
 
-    def update(self, batch, c, n, eta):
+    def update(self, batch, lmbda, n, eta):
         gradients = defaultdict(float)
 
         for wordseq, tagseq in batch:
@@ -147,8 +147,8 @@ class CRF(object):
                         for fi in bifis + unifis:
                             gradients[fi] -= p
 
-        if c != 0:
-            self.W *= (1 - eta * c / n)
+        if lmbda != 0:
+            self.W *= (1 - eta * lmbda / n)
         for k, v in gradients.items():
             self.W[k] += eta * v
         self.BS = np.array([

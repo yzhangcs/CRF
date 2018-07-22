@@ -63,14 +63,14 @@ print("\tepochs: %d\n\tbatch_size: %d\n\tinterval: %d\t\n\teta: %f" %
 if args.anneal:
     print("\tdacay: %f" % config.decay)
 if args.regularize:
-    print("\tc: %f" % config.c)
+    print("\tlmbda: %f" % config.lmbda)
 crf.SGD(train, dev, file,
         epochs=config.epochs,
         batch_size=config.batch_size,
         interval=config.interval,
         eta=config.eta,
         decay=config.decay,
-        c=config.c,
+        lmbda=config.lmbda,
         anneal=args.anneal,
         regularize=args.regularize,
         shuffle=args.shuffle)

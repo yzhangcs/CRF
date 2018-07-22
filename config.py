@@ -5,7 +5,7 @@ class Config(object):
 
     def __init__(self, bigdata=False):
         self.epochs = 100
-        self.c = 0.01
+        self.lmbda = 0.01
         self.decay = 0.96
         if bigdata:
             self.batch_size = 50
