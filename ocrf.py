@@ -25,12 +25,12 @@ def preprocess(fdata):
 
 
 class CRF(object):
+    # 句首词性
+    SOS = '<SOS>'
 
     def __init__(self, tags):
         # 所有不同的词性
         self.tags = tags
-        # 句首词性
-        self.BOS = 'BOS'
         # 词性对应索引的字典
         self.tdict = {t: i for i, t in enumerate(tags)}
 
@@ -41,7 +41,7 @@ class CRF(object):
         self.epsilon = list({
             f for wordseq, tagseq in sentences
             for f in set(
-                self.instantiate(wordseq, 0, self.BOS)
+                self.instantiate(wordseq, 0, self.SOS)
             ).union(*[
                 self.instantiate(wordseq, i, tagseq[i - 1])
                 for i, tag in enumerate(tagseq[1:], 1)
@@ -113,7 +113,7 @@ class CRF(object):
         gradients = defaultdict(float)
 
         for wordseq, tagseq in batch:
-            prev_tag = self.BOS
+            prev_tag = self.SOS
             for i, tag in enumerate(tagseq):
                 ti = self.tdict[tag]
                 fis = (self.fdict[f]
@@ -127,7 +127,7 @@ class CRF(object):
             beta = self.backward(wordseq)
             logZ = logsumexp(alpha[-1])
 
-            fv = self.instantiate(wordseq, 0, self.BOS)
+            fv = self.instantiate(wordseq, 0, self.SOS)
             fis = (self.fdict[f] for f in fv if f in self.fdict)
             p = np.exp(self.score(fv) + beta[0] - logZ)
             for fi in fis:
@@ -154,7 +154,7 @@ class CRF(object):
         T = len(wordseq)
         alpha = np.zeros((T, self.n))
 
-        fv = self.instantiate(wordseq, 0, self.BOS)
+        fv = self.instantiate(wordseq, 0, self.SOS)
         alpha[0] = self.score(fv)
 
         for i in range(1, T):
@@ -178,7 +178,7 @@ class CRF(object):
         delta = np.zeros((T, self.n))
         paths = np.zeros((T, self.n), dtype='int')
 
-        fv = self.instantiate(wordseq, 0, self.BOS)
+        fv = self.instantiate(wordseq, 0, self.SOS)
         delta[0] = self.score(fv)
 
         for i in range(1, T):
