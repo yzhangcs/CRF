@@ -9,43 +9,20 @@ import numpy as np
 from scipy.misc import logsumexp
 
 
-def preprocess(fdata):
-    start = 0
-    sentences = []
-    with open(fdata, 'r') as train:
-        lines = [line for line in train]
-    for i, line in enumerate(lines):
-        if len(lines[i]) <= 1:
-            wordseq, tagseq = zip(*[l.split()[1:4:2] for l in lines[start:i]])
-            start = i + 1
-            while start < len(lines) and len(lines[start]) <= 1:
-                start += 1
-            sentences.append((wordseq, tagseq))
-    return sentences
-
-
 class CRF(object):
-    # 句首词性
-    SOS = '<SOS>'
 
-    def __init__(self, tags):
-        # 所有不同的词性
-        self.tags = tags
-        # 词性对应索引的字典
-        self.tdict = {t: i for i, t in enumerate(tags)}
+    def __init__(self, nt):
+        # 词性数量
+        self.nt = nt
 
-        self.n = len(self.tags)
-
-    def create_feature_space(self, sentences):
+    def create_feature_space(self, data):
         # 特征空间
         self.epsilon = list({
-            f for wordseq, tagseq in sentences
-            for f in set(
-                self.instantiate(wordseq, 0, self.SOS)
-            ).union(*[
-                self.instantiate(wordseq, i, tagseq[i - 1])
-                for i, tag in enumerate(tagseq[1:], 1)
-            ])
+            f for wordseq, tiseq in data
+            for f in set(self.instantiate(wordseq, 0, -1)).union(
+                *[self.instantiate(wordseq, i, tiseq[i - 1])
+                  for i, ti in enumerate(tiseq[1:], 1)]
+            )
         })
         # 特征对应索引的字典
         self.fdict = {f: i for i, f in enumerate(self.epsilon)}
@@ -53,21 +30,22 @@ class CRF(object):
         self.d = len(self.epsilon)
 
         # 特征权重
-        self.W = np.zeros((self.d, self.n))
+        self.W = np.zeros((self.d, self.nt))
         # Bigram特征及对应权重分值
-        self.BF = [self.bigram(prev_tag) for prev_tag in self.tags]
-        self.BS = np.array([self.score(bifv) for bifv in self.BF])
+        self.BF = [self.bigram(prev_ti) for prev_ti in range(self.nt)]
+        self.BS = np.array([self.score(bfv) for bfv in self.BF])
 
     def SGD(self, train, dev, file,
             epochs, batch_size, interval, eta, decay, lmbda,
             anneal, regularize, shuffle):
+        # 训练集大小
+        n = len(train)
         # 记录更新次数
         count = 0
         # 记录迭代时间
         total_time = timedelta()
         # 记录最大准确率及对应的迭代次数
         max_e, max_precision = 0, 0.0
-        nt = len(train)
 
         # 迭代指定次数训练模型
         for epoch in range(epochs):
@@ -85,10 +63,10 @@ class CRF(object):
             # 根据批次数据更新权重
             for batch in batches:
                 if not anneal:
-                    self.update(batch, lmbda, nt, eta)
+                    self.update(batch, lmbda, n, eta)
                 # 设置学习速率的指数衰减
                 else:
-                    self.update(batch, lmbda, nt, eta * decay ** (count / nb))
+                    self.update(batch, lmbda, n, eta * decay ** (count / nb))
                 count += 1
 
             print("Epoch %d / %d: " % (epoch, epochs))
@@ -112,95 +90,95 @@ class CRF(object):
     def update(self, batch, lmbda, n, eta):
         gradients = defaultdict(float)
 
-        for wordseq, tagseq in batch:
-            prev_tag = self.SOS
-            for i, tag in enumerate(tagseq):
-                ti = self.tdict[tag]
-                fis = (self.fdict[f]
-                       for f in self.instantiate(wordseq, i, prev_tag)
-                       if f in self.fdict)
-                for fi in fis:
+        for wordseq, tiseq in batch:
+            prev_ti = -1
+            for i, ti in enumerate(tiseq):
+                fiseq = (self.fdict[f]
+                         for f in self.instantiate(wordseq, i, prev_ti)
+                         if f in self.fdict)
+                for fi in fiseq:
                     gradients[fi, ti] += 1
-                prev_tag = tag
+                prev_ti = ti
 
             alpha = self.forward(wordseq)
             beta = self.backward(wordseq)
             logZ = logsumexp(alpha[-1])
 
-            fv = self.instantiate(wordseq, 0, self.SOS)
-            fis = (self.fdict[f] for f in fv if f in self.fdict)
+            fv = self.instantiate(wordseq, 0, -1)
+            fiseq = (self.fdict[f] for f in fv if f in self.fdict)
             p = np.exp(self.score(fv) + beta[0] - logZ)
-            for fi in fis:
+            for fi in fiseq:
                 gradients[fi] -= p
 
-            for i in range(1, len(tagseq)):
-                unifv = self.unigram(wordseq, i)
-                unifis = [self.fdict[f] for f in unifv if f in self.fdict]
-                scores = self.BS + self.score(unifv)
+            for i in range(1, len(tiseq)):
+                ufv = self.unigram(wordseq, i)
+                ufiseq = [self.fdict[f] for f in ufv if f in self.fdict]
+                scores = self.BS + self.score(ufv)
                 probs = np.exp(scores + alpha[i - 1][:, None] + beta[i] - logZ)
 
-                for bifv, p in zip(self.BF, probs):
-                    bifis = [self.fdict[f] for f in bifv if f in self.fdict]
-                    for fi in bifis + unifis:
+                for bfv, p in zip(self.BF, probs):
+                    bfiseq = [self.fdict[f] for f in bfv if f in self.fdict]
+                    for fi in bfiseq + ufiseq:
                         gradients[fi] -= p
 
         if lmbda != 0:
             self.W *= (1 - eta * lmbda / n)
         for k, v in gradients.items():
             self.W[k] += eta * v
-        self.BS = np.array([self.score(bifv) for bifv in self.BF])
+        self.BS = np.array([self.score(bfv) for bfv in self.BF])
 
     def forward(self, wordseq):
         T = len(wordseq)
-        alpha = np.zeros((T, self.n))
+        alpha = np.zeros((T, self.nt))
 
-        fv = self.instantiate(wordseq, 0, self.SOS)
+        fv = self.instantiate(wordseq, 0, -1)
         alpha[0] = self.score(fv)
 
         for i in range(1, T):
-            uniscores = self.score(self.unigram(wordseq, i))
-            scores = np.transpose(self.BS + uniscores)
+            uscores = self.score(self.unigram(wordseq, i))
+            scores = np.transpose(self.BS + uscores)
             alpha[i] = logsumexp(scores + alpha[i - 1], axis=1)
         return alpha
 
     def backward(self, wordseq):
         T = len(wordseq)
-        beta = np.zeros((T, self.n))
+        beta = np.zeros((T, self.nt))
 
         for i in reversed(range(T - 1)):
-            uniscores = self.score(self.unigram(wordseq, i + 1))
-            scores = self.BS + uniscores
+            uscores = self.score(self.unigram(wordseq, i + 1))
+            scores = self.BS + uscores
             beta[i] = logsumexp(scores + beta[i + 1], axis=1)
         return beta
 
     def predict(self, wordseq):
         T = len(wordseq)
-        delta = np.zeros((T, self.n))
-        paths = np.zeros((T, self.n), dtype='int')
+        delta = np.zeros((T, self.nt))
+        paths = np.zeros((T, self.nt), dtype='int')
 
-        fv = self.instantiate(wordseq, 0, self.SOS)
+        fv = self.instantiate(wordseq, 0, -1)
         delta[0] = self.score(fv)
 
         for i in range(1, T):
-            uniscores = self.score(self.unigram(wordseq, i))
-            scores = np.transpose(self.BS + uniscores) + delta[i - 1]
+            uscores = self.score(self.unigram(wordseq, i))
+            scores = np.transpose(self.BS + uscores) + delta[i - 1]
             paths[i] = np.argmax(scores, axis=1)
-            delta[i] = scores[np.arange(self.n), paths[i]]
+            delta[i] = scores[np.arange(self.nt), paths[i]]
         prev = np.argmax(delta[-1])
 
         predict = [prev]
         for i in reversed(range(1, T)):
             prev = paths[i, prev]
             predict.append(prev)
-        return [self.tags[i] for i in reversed(predict)]
+        predict.reverse()
+        return predict
 
     def score(self, fvector):
         scores = np.array([self.W[self.fdict[f]]
                            for f in fvector if f in self.fdict])
         return np.sum(scores, axis=0)
 
-    def bigram(self, prev_tag):
-        return [('01', prev_tag)]
+    def bigram(self, prev_ti):
+        return [('01', prev_ti)]
 
     def unigram(self, wordseq, index):
         word = wordseq[index]
@@ -238,18 +216,18 @@ class CRF(object):
             fvector.append(('15', word))
         return fvector
 
-    def instantiate(self, wordseq, index, prev_tag):
-        bigram = self.bigram(prev_tag)
+    def instantiate(self, wordseq, index, prev_ti):
+        bigram = self.bigram(prev_ti)
         unigram = self.unigram(wordseq, index)
         return bigram + unigram
 
-    def evaluate(self, sentences):
+    def evaluate(self, data):
         tp, total = 0, 0
 
-        for wordseq, tagseq in sentences:
+        for wordseq, tiseq in data:
             total += len(wordseq)
-            preseq = np.array(self.predict(wordseq))
-            tp += np.sum(tagseq == preseq)
+            piseq = np.array(self.predict(wordseq))
+            tp += np.sum(tiseq == piseq)
         precision = tp / total
         return tp, total, precision
 

@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import numpy as np
 
 from config import Config
+from corpus import Corpus
 
 # 解析命令参数
 parser = argparse.ArgumentParser(
@@ -26,23 +27,22 @@ parser.add_argument('--file', '-f', action='store', dest='file',
 args = parser.parse_args()
 
 if args.optimize:
-    from ocrf import CRF, preprocess
+    from ocrf import CRF
 else:
-    from crf import CRF, preprocess
+    from crf import CRF
 
 # 根据参数读取配置
 config = Config(args.bigdata)
 
-train = preprocess(config.ftrain)
-dev = preprocess(config.fdev)
+print("Preprocessing the data")
+corpus = Corpus(config.ftrain)
+train = corpus.load(config.ftrain)
+dev = corpus.load(config.fdev)
 file = args.file if args.file else config.crfpkl
-
-wordseqs, tagseqs = zip(*train)
-tags = sorted(set(np.hstack(tagseqs)))
 
 start = datetime.now()
 
-print("Creating Conditional Random Field with %d tags" % (len(tags)))
+print("Creating Conditional Random Field with %d tags" % corpus.nt)
 if args.optimize:
     print("\tuse feature extracion optimization")
 if args.anneal:
@@ -51,9 +51,9 @@ if args.regularize:
     print("\tuse L2 regularization")
 if args.shuffle:
     print("\tshuffle the data at each epoch")
-crf = CRF(tags)
+crf = CRF(corpus.nt)
 
-print("Using %d sentences to create the feature space" % (len(train)))
+print("Using %d sentences to create the feature space" % corpus.ns)
 crf.create_feature_space(train)
 print("The size of the feature space is %d" % crf.d)
 
@@ -76,7 +76,7 @@ crf.SGD(train, dev, file,
         shuffle=args.shuffle)
 
 if args.bigdata:
-    test = preprocess(config.ftest)
+    test = corpus.load(config.ftest)
     crf = CRF.load(file)
     print("Precision of test: %d / %d = %4f" % crf.evaluate(test))
 
