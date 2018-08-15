@@ -1,10 +1,10 @@
-Preprocessing the data
-Creating Conditional Random Field with 35 tags
+Preprocess the data
+Create Conditional Random Field with 35 tags
 	use feature extracion optimization
 	use simulated annealing
-Using 46572 sentences to create the feature space
+Use 46572 sentences to create the feature space
 The size of the feature space is 1400228
-Using SGD algorithm to train the model
+Use SGD algorithm to train the model
 	epochs: 100
 	batch_size: 50
 	interval: 10
