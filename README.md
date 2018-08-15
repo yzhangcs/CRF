@@ -43,6 +43,8 @@ optional arguments:
   --regularize, -r  use L2 regularization
   --shuffle, -s     shuffle the data at each epoch
   --file FILE, -f FILE  set where to store the model
+# eg: 特征提取优化+模拟退火+打乱数据
+$ python run.py -b --optimize --anneal --shuffle 
 ```
 
 ## 结果
