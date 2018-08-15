@@ -7,19 +7,31 @@ class Corpus(object):
     UNK = '<UNK>'
 
     def __init__(self, fdata):
+        # 获取数据的句子
         self.sentences = self.preprocess(fdata)
-        self.wordseqs, self.tagseqs = zip(*self.sentences)
-        self.words = sorted(set(np.hstack(self.wordseqs)))
-        self.tags = sorted(set(np.hstack(self.tagseqs)))
-        self.chars = sorted({c for w in self.words for c in w})
-        self.chars.append(self.UNK)
+        # 获取数据的所有不同的词汇、词性和字符
+        self.words, self.tags, self.chars = self.parse(self.sentences)
+        # 增加未知字符
+        self.chars += [self.UNK]
 
-        self.cdict = {c: i for i, c in enumerate(self.chars)}
+        # 词汇字典
+        self.wdict = {w: i for i, w in enumerate(self.words)}
+        # 词性字典
         self.tdict = {t: i for i, t in enumerate(self.tags)}
+        # 字符字典
+        self.cdict = {c: i for i, c in enumerate(self.chars)}
+
+        # 未知字符索引
         self.ui = self.cdict[self.UNK]
+
+        # 句子数量
         self.ns = len(self.sentences)
+        # 词汇数量
         self.nw = len(self.words)
+        # 词性数量
         self.nt = len(self.tags)
+        # 字符数量
+        self.nc = len(self.chars)
 
     def load(self, fdata):
         data = []
@@ -27,17 +39,12 @@ class Corpus(object):
 
         for wordseq, tagseq in sentences:
             wordseq = [
-                tuple(self.cdict[c]
-                      if c in self.cdict else self.ui
-                      for c in w)
+                tuple(self.cdict.get(c, self.ui) for c in w)
                 for w in wordseq
             ]
             tiseq = [self.tdict[t] for t in tagseq]
             data.append((wordseq, tiseq))
         return data
-
-    def size(self):
-        return self.nw - 1, self.nt
 
     @staticmethod
     def preprocess(fdata):
@@ -54,3 +61,11 @@ class Corpus(object):
                     start += 1
                 sentences.append((wordseq, tagseq))
         return sentences
+
+    @staticmethod
+    def parse(sentences):
+        wordseqs, tagseqs = zip(*sentences)
+        words = sorted(set(np.hstack(wordseqs)))
+        tags = sorted(set(np.hstack(tagseqs)))
+        chars = sorted(set(''.join(words)))
+        return words, tags, chars
