@@ -34,7 +34,7 @@ else:
 # 根据参数读取配置
 config = Config(args.bigdata)
 
-print("Preprocessing the data")
+print("Preprocess the data")
 corpus = Corpus(config.ftrain)
 train = corpus.load(config.ftrain)
 dev = corpus.load(config.fdev)
@@ -42,7 +42,7 @@ file = args.file if args.file else config.crfpkl
 
 start = datetime.now()
 
-print("Creating Conditional Random Field with %d tags" % corpus.nt)
+print("Create Conditional Random Field with %d tags" % corpus.nt)
 if args.optimize:
     print("\tuse feature extracion optimization")
 if args.anneal:
@@ -53,11 +53,11 @@ if args.shuffle:
     print("\tshuffle the data at each epoch")
 crf = CRF(corpus.nt)
 
-print("Using %d sentences to create the feature space" % corpus.ns)
+print("Use %d sentences to create the feature space" % corpus.ns)
 crf.create_feature_space(train)
 print("The size of the feature space is %d" % crf.d)
 
-print("Using SGD algorithm to train the model")
+print("Use SGD algorithm to train the model")
 print("\tepochs: %d\n\tbatch_size: %d\n\tinterval: %d\t\n\teta: %f" %
       (config.epochs, config.batch_size,  config.interval, config.eta))
 if args.anneal:
