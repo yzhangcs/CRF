@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import numpy as np
-
 
 class Corpus(object):
     UNK = '<UNK>'
@@ -65,7 +63,7 @@ class Corpus(object):
     @staticmethod
     def parse(sentences):
         wordseqs, tagseqs = zip(*sentences)
-        words = sorted(set(np.hstack(wordseqs)))
-        tags = sorted(set(np.hstack(tagseqs)))
+        words = sorted(set(w for wordseq in wordseqs for w in wordseq))
+        tags = sorted(set(t for tagseq in tagseqs for t in tagseq))
         chars = sorted(set(''.join(words)))
         return words, tags, chars
