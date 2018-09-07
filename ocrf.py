@@ -18,9 +18,9 @@ class CRF(object):
     def create_feature_space(self, data):
         # 特征空间
         self.epsilon = list({
-            f for wordseq, tiseq in data
-            for f in set(self.instantiate(wordseq, 0, -1)).union(
-                *[self.instantiate(wordseq, i, tiseq[i - 1])
+            f for wiseq, tiseq in data
+            for f in set(self.instantiate(wiseq, 0, -1)).union(
+                *[self.instantiate(wiseq, i, tiseq[i - 1])
                   for i, ti in enumerate(tiseq[1:], 1)]
             )
         })
@@ -90,28 +90,28 @@ class CRF(object):
     def update(self, batch, lmbda, n, eta):
         gradients = defaultdict(float)
 
-        for wordseq, tiseq in batch:
+        for wiseq, tiseq in batch:
             prev_ti = -1
             for i, ti in enumerate(tiseq):
                 fiseq = (self.fdict[f]
-                         for f in self.instantiate(wordseq, i, prev_ti)
+                         for f in self.instantiate(wiseq, i, prev_ti)
                          if f in self.fdict)
                 for fi in fiseq:
                     gradients[fi, ti] += 1
                 prev_ti = ti
 
-            alpha = self.forward(wordseq)
-            beta = self.backward(wordseq)
+            alpha = self.forward(wiseq)
+            beta = self.backward(wiseq)
             logZ = logsumexp(alpha[-1])
 
-            fv = self.instantiate(wordseq, 0, -1)
+            fv = self.instantiate(wiseq, 0, -1)
             fiseq = (self.fdict[f] for f in fv if f in self.fdict)
             p = np.exp(self.score(fv) + beta[0] - logZ)
             for fi in fiseq:
                 gradients[fi] -= p
 
             for i in range(1, len(tiseq)):
-                ufv = self.unigram(wordseq, i)
+                ufv = self.unigram(wiseq, i)
                 ufiseq = [self.fdict[f] for f in ufv if f in self.fdict]
                 scores = self.BS + self.score(ufv)
                 probs = np.exp(scores + alpha[i - 1][:, None] + beta[i] - logZ)
@@ -127,39 +127,39 @@ class CRF(object):
             self.W[k] += eta * v
         self.BS = np.array([self.score(bfv) for bfv in self.BF])
 
-    def forward(self, wordseq):
-        T = len(wordseq)
+    def forward(self, wiseq):
+        T = len(wiseq)
         alpha = np.zeros((T, self.nt))
 
-        fv = self.instantiate(wordseq, 0, -1)
+        fv = self.instantiate(wiseq, 0, -1)
         alpha[0] = self.score(fv)
 
         for i in range(1, T):
-            uscores = self.score(self.unigram(wordseq, i))
+            uscores = self.score(self.unigram(wiseq, i))
             scores = np.transpose(self.BS + uscores)
             alpha[i] = logsumexp(scores + alpha[i - 1], axis=1)
         return alpha
 
-    def backward(self, wordseq):
-        T = len(wordseq)
+    def backward(self, wiseq):
+        T = len(wiseq)
         beta = np.zeros((T, self.nt))
 
         for i in reversed(range(T - 1)):
-            uscores = self.score(self.unigram(wordseq, i + 1))
+            uscores = self.score(self.unigram(wiseq, i + 1))
             scores = self.BS + uscores
             beta[i] = logsumexp(scores + beta[i + 1], axis=1)
         return beta
 
-    def predict(self, wordseq):
-        T = len(wordseq)
+    def predict(self, wiseq):
+        T = len(wiseq)
         delta = np.zeros((T, self.nt))
         paths = np.zeros((T, self.nt), dtype='int')
 
-        fv = self.instantiate(wordseq, 0, -1)
+        fv = self.instantiate(wiseq, 0, -1)
         delta[0] = self.score(fv)
 
         for i in range(1, T):
-            uscores = self.score(self.unigram(wordseq, i))
+            uscores = self.score(self.unigram(wiseq, i))
             scores = np.transpose(self.BS + uscores) + delta[i - 1]
             paths[i] = np.argmax(scores, axis=1)
             delta[i] = scores[np.arange(self.nt), paths[i]]
@@ -180,10 +180,10 @@ class CRF(object):
     def bigram(self, prev_ti):
         return [('01', prev_ti)]
 
-    def unigram(self, wordseq, index):
-        word = wordseq[index]
-        prev_word = wordseq[index - 1] if index > 0 else '^^'
-        next_word = wordseq[index + 1] if index < len(wordseq) - 1 else '$$'
+    def unigram(self, wiseq, index):
+        word = wiseq[index]
+        prev_word = wiseq[index - 1] if index > 0 else '^^'
+        next_word = wiseq[index + 1] if index < len(wiseq) - 1 else '$$'
         prev_char = prev_word[-1]
         next_char = next_word[0]
         first_char = word[0]
@@ -216,17 +216,17 @@ class CRF(object):
             fvector.append(('15', word))
         return fvector
 
-    def instantiate(self, wordseq, index, prev_ti):
+    def instantiate(self, wiseq, index, prev_ti):
         bigram = self.bigram(prev_ti)
-        unigram = self.unigram(wordseq, index)
+        unigram = self.unigram(wiseq, index)
         return bigram + unigram
 
     def evaluate(self, data):
         tp, total = 0, 0
 
-        for wordseq, tiseq in data:
-            total += len(wordseq)
-            piseq = np.array(self.predict(wordseq))
+        for wiseq, tiseq in data:
+            total += len(wiseq)
+            piseq = np.array(self.predict(wiseq))
             tp += np.sum(tiseq == piseq)
         precision = tp / total
         return tp, total, precision
