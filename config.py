@@ -20,4 +20,3 @@ class Config(object):
             self.interval = 5
             self.ftrain = 'data/train.conll'
             self.fdev = 'data/dev.conll'
-        self.crfpkl = 'crf.pkl'
