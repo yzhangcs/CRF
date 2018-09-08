@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import random
 from datetime import datetime, timedelta
 
 import numpy as np
@@ -39,7 +40,7 @@ if __name__ == '__main__':
         from crf import CRF
 
     print("Set the seed for generating random numbers to %d" % args.seed)
-    np.random.seed(args.seed)
+    random.seed(args.seed)
 
     # 根据参数读取配置
     config = Config(args.bigdata)
@@ -59,8 +60,6 @@ if __name__ == '__main__':
         print("\tuse simulated annealing")
     if args.regularize:
         print("\tuse L2 regularization")
-    if args.shuffle:
-        print("\tshuffle the data at each epoch")
     crf = CRF(corpus.nt)
 
     print("Use %d sentences to create the feature space" % corpus.ns)
@@ -82,8 +81,7 @@ if __name__ == '__main__':
             decay=config.decay,
             lmbda=config.lmbda,
             anneal=args.anneal,
-            regularize=args.regularize,
-            shuffle=args.shuffle)
+            regularize=args.regularize)
 
     if args.bigdata:
         test = corpus.load(config.ftest)

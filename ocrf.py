@@ -37,7 +37,7 @@ class CRF(object):
 
     def SGD(self, train, dev, file,
             epochs, batch_size, interval, eta, decay, lmbda,
-            anneal, regularize, shuffle):
+            anneal, regularize):
         # 训练集大小
         n = len(train)
         # 记录更新次数
@@ -51,8 +51,7 @@ class CRF(object):
         for epoch in range(1, epochs + 1):
             start = datetime.now()
             # 随机打乱数据
-            if shuffle:
-                random.shuffle(train)
+            random.shuffle(train)
             # 设置L2正则化系数
             if not regularize:
                 lmbda = 0
