@@ -11,15 +11,15 @@
 ├── data
 │   ├── dev.conll
 │   └── train.conll
-├── result
+├── results
 │   ├── acrf.txt
-│   ├── ascrf.txt
+│   ├── bacrf.txt
+│   ├── bcrf.txt
+│   ├── boacrf.txt
+│   ├── bocrf.txt
 │   ├── crf.txt
 │   ├── oacrf.txt
-│   ├── oascrf.txt
-│   ├── ocrf.txt
-│   ├── oscrf.txt
-│   └── scrf.txt
+│   └── ocrf.txt
 ├── config.py
 ├── crf.py
 ├── ocrf.py
@@ -31,17 +31,18 @@
 
 ```sh
 $ python run.py -h
-usage: run.py [-h] [-b] [--anneal] [--optimize] [--regularize] [--shuffle]
+usage: run.py [-h] [--bigdata] [--anneal] [--optimize] [--regularize]
+              [--seed SEED] [--file FILE]
 
 Create Conditional Random Field(CRF) for POS Tagging.
 
 optional arguments:
-  -h, --help        show this help message and exit
-  -b                use big data
-  --anneal, -a      use simulated annealing
-  --optimize, -o    use feature extracion optimization
-  --regularize, -r  use L2 regularization
-  --shuffle, -s     shuffle the data at each epoch
+  -h, --help            show this help message and exit
+  --bigdata, -b         use big data
+  --anneal, -a          use simulated annealing
+  --optimize, -o        use feature extracion optimization
+  --regularize, -r      use L2 regularization
+  --seed SEED, -s SEED  set the seed for generating random numbers
   --file FILE, -f FILE  set where to store the model
 # e.g. 特征提取优化+模拟退火+打乱数据
 $ python run.py -b --optimize --anneal --shuffle 
@@ -49,13 +50,13 @@ $ python run.py -b --optimize --anneal --shuffle
 
 ## 结果
 
-| 特征提取优化 | 模拟退火 | 打乱数据 | 迭代次数 |  dev/P   |  test/P  |     mT(s)      |
-| :----------: | :------: | :------: | :------: | :------: | :------: | :------------: |
-|      ×       |    ×     |    ×     |  78/89   | 93.5068% | 93.2273% | 0:46:45.832759 |
-|      ×       |    ×     |    √     |  22/33   | 93.8671% | 93.6993% | 0:52:48.013512 |
-|      ×       |    √     |    ×     |  30/41   | 93.6686% | 93.3879% | 0:48:04.814345 |
-|      ×       |    √     |    √     |  19/30   | 94.1489% | 93.9187% | 0:48:21.350622 |
-|      √       |    ×     |    ×     |  41/52   | 93.6719% | 93.4578% | 0:09:32.178284 |
-|      √       |    ×     |    √     |  20/31   | 93.9771% | 93.8206% | 0:09:32.436235 |
-|      √       |    √     |    ×     |  29/40   | 93.8120% | 93.5534% | 0:09:48.246697 |
-|      √       |    √     |    √     |  34/45   | 94.2657% | 94.0989% | 0:09:43.802662 |
+| 大数据集 | 特征提取优化 | 模拟退火 | 迭代次数 |  dev/P   |  test/P  |     mT(s)      |
+| :------: | :----------: | :------: | :------: | :------: | :------: | :------------: |
+|    ×     |      ×       |    ×     |  12/18   | 88.6405% |    *     | 0:00:52.687575 |
+|    ×     |      ×       |    √     |  10/16   | 88.6504% |    *     | 0:00:52.967660 |
+|    ×     |      √       |    ×     |  10/16   | 88.9425% |    *     | 0:00:16.543064 |
+|    ×     |      √       |    √     |  12/18   | 88.9247% |    *     | 0:00:17.004330 |
+|    √     |      ×       |    ×     |  14/25   | 93.8587% | 93.7054% | 0:57:13.132850 |
+|    √     |      ×       |    √     |  37/48   | 94.2190% | 93.9665% | 0:56:30.033807 |
+|    √     |      √       |    ×     |  15/26   | 93.9705% | 93.8537% | 0:13:33.869449 |
+|    √     |      √       |    √     |  13/24   | 94.2107% | 94.0425% | 0:13:25.669687 |
