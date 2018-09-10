@@ -38,29 +38,29 @@ class CRF(object):
         ]
         self.BS = np.zeros((self.nt, self.nt))
 
-    def SGD(self, train, dev, file,
+    def SGD(self, trainset, devset, file,
             epochs, batch_size, interval, eta, decay, lmbda,
             anneal, regularize):
         # 训练集大小
-        n = len(train)
+        n = len(trainset)
         # 记录更新次数
         count = 0
         # 记录迭代时间
         total_time = timedelta()
         # 记录最大准确率及对应的迭代次数
-        max_e, max_precision = 0, 0.0
+        max_e, max_accuracy = 0, 0.0
 
         # 迭代指定次数训练模型
         for epoch in range(1, epochs + 1):
             start = datetime.now()
             # 随机打乱数据
-            random.shuffle(train)
+            random.shuffle(trainset)
             # 设置L2正则化系数
             if not regularize:
                 lmbda = 0
             # 按照指定大小对数据分割批次
-            batches = [train[i:i + batch_size]
-                       for i in range(0, len(train), batch_size)]
+            batches = [trainset[i:i + batch_size]
+                       for i in range(0, len(trainset), batch_size)]
             nb = len(batches)
             # 根据批次数据更新权重
             for batch in batches:
@@ -72,22 +72,23 @@ class CRF(object):
                 count += 1
 
             print("Epoch %d / %d: " % (epoch, epochs))
-            print("\ttrain: %d / %d = %4f" % self.evaluate(train))
-            tp, total, precision = self.evaluate(dev)
-            print("\tdev: %d / %d = %4f" % (tp, total, precision))
+            tp, total, accuracy = self.evaluate(trainset)
+            print("%-6s %d / %d = %4f" % ('train:', tp, total, accuracy))
+            tp, total, accuracy = self.evaluate(devset)
+            print("%-6s %d / %d = %4f" % ('dev:', tp, total, accuracy))
             t = datetime.now() - start
-            print("\t%ss elapsed" % t)
+            print("%ss elapsed\n" % t)
             total_time += t
 
             # 保存效果最好的模型
-            if precision > max_precision:
+            if accuracy > max_accuracy:
                 self.dump(file)
-                max_e, max_precision = epoch, precision
+                max_e, max_accuracy = epoch, accuracy
             elif epoch - max_e > interval:
                 break
-        print("max precision of dev is %4f at epoch %d" %
-              (max_precision, max_e))
-        print("mean time of each epoch is %ss" % (total_time / epoch))
+        print("max accuracy of dev is %4f at epoch %d" %
+              (max_accuracy, max_e))
+        print("mean time of each epoch is %ss\n" % (total_time / epoch))
 
     def update(self, batch, lmbda, n, eta):
         gradients = defaultdict(float)
@@ -247,8 +248,8 @@ class CRF(object):
             total += len(wiseq)
             piseq = np.array(self.predict(wiseq))
             tp += np.sum(tiseq == piseq)
-        precision = tp / total
-        return tp, total, precision
+        accuracy = tp / total
+        return tp, total, accuracy
 
     def dump(self, file):
         with open(file, 'wb') as f:

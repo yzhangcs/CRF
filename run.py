@@ -47,33 +47,47 @@ if __name__ == '__main__':
 
     print("Preprocess the data")
     corpus = Corpus(config.ftrain)
-    train = corpus.load(config.ftrain)
-    dev = corpus.load(config.fdev)
-    file = args.file if args.file else config.crfpkl
+    print(corpus)
+
+    print("Load the dataset")
+    trainset = corpus.load(config.ftrain)
+    devset = corpus.load(config.fdev)
+    print("  size of trainset: %d\n"
+          "  size of devset: %d" %
+          (len(trainset), len(devset)))
+    if args.bigdata:
+        testset = corpus.load(config.ftest)
+        print("  size of testset: %d" % len(testset))
 
     start = datetime.now()
 
-    print("Create Conditional Random Field with %d tags" % corpus.nt)
+    print("Create Conditional Random Field")
     if args.optimize:
-        print("\tuse feature extracion optimization")
+        print("  use feature extracion optimization")
     if args.anneal:
-        print("\tuse simulated annealing")
+        print("  use simulated annealing")
     if args.regularize:
-        print("\tuse L2 regularization")
+        print("  use L2 regularization")
     crf = CRF(corpus.nt)
 
     print("Use %d sentences to create the feature space" % corpus.ns)
-    crf.create_feature_space(train)
+    crf.create_feature_space(trainset)
     print("The size of the feature space is %d" % crf.d)
 
     print("Use SGD algorithm to train the model")
-    print("\tepochs: %d\n\tbatch_size: %d\n\tinterval: %d\t\n\teta: %f" %
+    print("  epochs: %d\n"
+          "  batch_size: %d\n"
+          "  interval: %d\n"
+          "  eta: %f" %
           (config.epochs, config.batch_size,  config.interval, config.eta))
     if args.anneal:
-        print("\tdacay: %f" % config.decay)
+        print("  dacay: %f" % config.decay)
     if args.regularize:
-        print("\tlmbda: %f" % config.lmbda)
-    crf.SGD(train, dev, file,
+        print("  lmbda: %f" % config.lmbda)
+    print()
+    crf.SGD(trainset=trainset,
+            devset=devset,
+            file=args.file,
             epochs=config.epochs,
             batch_size=config.batch_size,
             interval=config.interval,
@@ -84,8 +98,7 @@ if __name__ == '__main__':
             regularize=args.regularize)
 
     if args.bigdata:
-        test = corpus.load(config.ftest)
-        crf = CRF.load(file)
-        print("Precision of test: %d / %d = %4f" % crf.evaluate(test))
+        crf = CRF.load(args.file)
+        print("Accuracy of test: %d / %d = %4f" % crf.evaluate(testset))
 
-    print("%ss elapsed\n" % (datetime.now() - start))
+    print("%ss elapsed" % (datetime.now() - start))

@@ -44,6 +44,15 @@ class Corpus(object):
             data.append((wiseq, tiseq))
         return data
 
+    def __repr__(self):
+        info = "%s(\n" % self.__class__.__name__
+        info += "  num of sentences: %d\n" % self.ns
+        info += "  num of words: %d\n" % self.nw
+        info += "  num of tags: %d\n" % self.nt
+        info += "  num of chars: %d\n" % self.nc
+        info += ")"
+        return info
+
     @staticmethod
     def preprocess(fdata):
         start = 0
