@@ -1,177 +1,118 @@
+Set the seed for generating random numbers to 1
 Preprocess the data
-Create Conditional Random Field with 35 tags
-	use feature extracion optimization
-	use simulated annealing
-Use 46572 sentences to create the feature space
-The size of the feature space is 1400228
+Corpus(
+  num of sentences: 803
+  num of words: 4537
+  num of tags: 31
+  num of chars: 1897
+)
+Load the dataset
+  size of trainset: 803
+  size of devset: 1910
+Create Conditional Random Field
+  use feature extracion optimization
+  use simulated annealing
+Use 803 sentences to create the feature space
+The size of the feature space is 67391
 Use SGD algorithm to train the model
-	epochs: 100
-	batch_size: 50
-	interval: 10
-	eta: 0.200000
-	dacay: 0.960000
+  epochs: 100
+  batch_size: 1
+  interval: 5
+  eta: 0.500000
+  dacay: 0.960000
+
 Epoch 1 / 100:
-	train: 988022 / 1057943 = 0.933909
-	dev: 54702 / 59955 = 0.912384
-	0:09:38.150578s elapsed
+train: 19842 / 20454 = 0.970079
+dev:   43463 / 50319 = 0.863749
+0:00:17.374756s elapsed
+
 Epoch 2 / 100:
-	train: 1005037 / 1057943 = 0.949992
-	dev: 55350 / 59955 = 0.923192
-	0:09:37.084610s elapsed
+train: 20084 / 20454 = 0.981911
+dev:   43799 / 50319 = 0.870427
+0:00:16.268251s elapsed
+
 Epoch 3 / 100:
-	train: 1014286 / 1057943 = 0.958734
-	dev: 55621 / 59955 = 0.927712
-	0:09:36.450813s elapsed
+train: 20393 / 20454 = 0.997018
+dev:   44357 / 50319 = 0.881516
+0:00:16.888544s elapsed
+
 Epoch 4 / 100:
-	train: 1019862 / 1057943 = 0.964005
-	dev: 55702 / 59955 = 0.929063
-	0:09:40.101166s elapsed
+train: 20416 / 20454 = 0.998142
+dev:   44403 / 50319 = 0.882430
+0:00:17.492383s elapsed
+
 Epoch 5 / 100:
-	train: 1024545 / 1057943 = 0.968431
-	dev: 55808 / 59955 = 0.930831
-	0:09:39.386298s elapsed
+train: 20447 / 20454 = 0.999658
+dev:   44617 / 50319 = 0.886683
+0:00:17.375952s elapsed
+
 Epoch 6 / 100:
-	train: 1028468 / 1057943 = 0.972139
-	dev: 55879 / 59955 = 0.932016
-	0:09:39.003209s elapsed
+train: 20439 / 20454 = 0.999267
+dev:   44643 / 50319 = 0.887200
+0:00:17.426332s elapsed
+
 Epoch 7 / 100:
-	train: 1028724 / 1057943 = 0.972381
-	dev: 55890 / 59955 = 0.932199
-	0:09:32.558905s elapsed
+train: 20454 / 20454 = 1.000000
+dev:   44724 / 50319 = 0.888809
+0:00:17.461736s elapsed
+
 Epoch 8 / 100:
-	train: 1025511 / 1057943 = 0.969344
-	dev: 55598 / 59955 = 0.927329
-	0:09:39.932328s elapsed
+train: 20454 / 20454 = 1.000000
+dev:   44731 / 50319 = 0.888949
+0:00:17.770847s elapsed
+
 Epoch 9 / 100:
-	train: 1033370 / 1057943 = 0.976773
-	dev: 55950 / 59955 = 0.933200
-	0:09:40.713514s elapsed
+train: 20454 / 20454 = 1.000000
+dev:   44712 / 50319 = 0.888571
+0:00:17.441051s elapsed
+
 Epoch 10 / 100:
-	train: 1035093 / 1057943 = 0.978401
-	dev: 56045 / 59955 = 0.934784
-	0:09:32.696374s elapsed
+train: 20454 / 20454 = 1.000000
+dev:   44728 / 50319 = 0.888889
+0:00:17.469201s elapsed
+
 Epoch 11 / 100:
-	train: 1036262 / 1057943 = 0.979506
-	dev: 56040 / 59955 = 0.934701
-	0:09:39.347211s elapsed
+train: 20454 / 20454 = 1.000000
+dev:   44718 / 50319 = 0.888690
+0:00:17.396039s elapsed
+
 Epoch 12 / 100:
-	train: 1036786 / 1057943 = 0.980002
-	dev: 56073 / 59955 = 0.935251
-	0:09:38.179133s elapsed
+train: 20454 / 20454 = 1.000000
+dev:   44746 / 50319 = 0.889247
+0:00:17.242327s elapsed
+
 Epoch 13 / 100:
-	train: 1037588 / 1057943 = 0.980760
-	dev: 56055 / 59955 = 0.934951
-	0:09:37.397137s elapsed
+train: 20454 / 20454 = 1.000000
+dev:   44713 / 50319 = 0.888591
+0:00:16.678497s elapsed
+
 Epoch 14 / 100:
-	train: 1038291 / 1057943 = 0.981424
-	dev: 56085 / 59955 = 0.935452
-	0:09:38.480065s elapsed
+train: 20454 / 20454 = 1.000000
+dev:   44725 / 50319 = 0.888829
+0:00:16.418493s elapsed
+
 Epoch 15 / 100:
-	train: 1039584 / 1057943 = 0.982647
-	dev: 56156 / 59955 = 0.936636
-	0:09:38.493459s elapsed
+train: 20454 / 20454 = 1.000000
+dev:   44722 / 50319 = 0.888770
+0:00:16.237821s elapsed
+
 Epoch 16 / 100:
-	train: 1039708 / 1057943 = 0.982764
-	dev: 56155 / 59955 = 0.936619
-	0:09:36.791700s elapsed
+train: 20454 / 20454 = 1.000000
+dev:   44716 / 50319 = 0.888650
+0:00:16.227203s elapsed
+
 Epoch 17 / 100:
-	train: 1040593 / 1057943 = 0.983600
-	dev: 56179 / 59955 = 0.937019
-	0:09:35.792213s elapsed
+train: 20454 / 20454 = 1.000000
+dev:   44735 / 50319 = 0.889028
+0:00:16.241848s elapsed
+
 Epoch 18 / 100:
-	train: 1041566 / 1057943 = 0.984520
-	dev: 56191 / 59955 = 0.937220
-	0:09:37.443239s elapsed
-Epoch 19 / 100:
-	train: 1042248 / 1057943 = 0.985165
-	dev: 56216 / 59955 = 0.937637
-	0:09:35.400329s elapsed
-Epoch 20 / 100:
-	train: 1042760 / 1057943 = 0.985649
-	dev: 56222 / 59955 = 0.937737
-	0:09:35.928631s elapsed
-Epoch 21 / 100:
-	train: 1043187 / 1057943 = 0.986052
-	dev: 56228 / 59955 = 0.937837
-	0:09:37.466202s elapsed
-Epoch 22 / 100:
-	train: 1043610 / 1057943 = 0.986452
-	dev: 56220 / 59955 = 0.937703
-	0:10:08.161598s elapsed
-Epoch 23 / 100:
-	train: 1043915 / 1057943 = 0.986740
-	dev: 56226 / 59955 = 0.937803
-	0:10:07.675095s elapsed
-Epoch 24 / 100:
-	train: 1044219 / 1057943 = 0.987028
-	dev: 56227 / 59955 = 0.937820
-	0:10:08.350532s elapsed
-Epoch 25 / 100:
-	train: 1044491 / 1057943 = 0.987285
-	dev: 56231 / 59955 = 0.937887
-	0:10:08.172272s elapsed
-Epoch 26 / 100:
-	train: 1044765 / 1057943 = 0.987544
-	dev: 56242 / 59955 = 0.938070
-	0:09:32.139563s elapsed
-Epoch 27 / 100:
-	train: 1044973 / 1057943 = 0.987740
-	dev: 56237 / 59955 = 0.937987
-	0:09:36.532774s elapsed
-Epoch 28 / 100:
-	train: 1045263 / 1057943 = 0.988014
-	dev: 56233 / 59955 = 0.937920
-	0:09:37.041534s elapsed
-Epoch 29 / 100:
-	train: 1045415 / 1057943 = 0.988158
-	dev: 56245 / 59955 = 0.938120
-	0:09:36.255262s elapsed
-Epoch 30 / 100:
-	train: 1045638 / 1057943 = 0.988369
-	dev: 56243 / 59955 = 0.938087
-	0:10:08.105053s elapsed
-Epoch 31 / 100:
-	train: 1045779 / 1057943 = 0.988502
-	dev: 56231 / 59955 = 0.937887
-	0:10:07.189640s elapsed
-Epoch 32 / 100:
-	train: 1045924 / 1057943 = 0.988639
-	dev: 56220 / 59955 = 0.937703
-	0:10:06.848700s elapsed
-Epoch 33 / 100:
-	train: 1046069 / 1057943 = 0.988776
-	dev: 56225 / 59955 = 0.937787
-	0:10:06.970799s elapsed
-Epoch 34 / 100:
-	train: 1046200 / 1057943 = 0.988900
-	dev: 56217 / 59955 = 0.937653
-	0:10:07.165155s elapsed
-Epoch 35 / 100:
-	train: 1046316 / 1057943 = 0.989010
-	dev: 56202 / 59955 = 0.937403
-	0:10:06.584338s elapsed
-Epoch 36 / 100:
-	train: 1046458 / 1057943 = 0.989144
-	dev: 56210 / 59955 = 0.937536
-	0:10:06.265086s elapsed
-Epoch 37 / 100:
-	train: 1046565 / 1057943 = 0.989245
-	dev: 56203 / 59955 = 0.937420
-	0:10:05.613165s elapsed
-Epoch 38 / 100:
-	train: 1046690 / 1057943 = 0.989363
-	dev: 56204 / 59955 = 0.937436
-	0:10:06.051949s elapsed
-Epoch 39 / 100:
-	train: 1046789 / 1057943 = 0.989457
-	dev: 56203 / 59955 = 0.937420
-	0:10:04.083690s elapsed
-Epoch 40 / 100:
-	train: 1046901 / 1057943 = 0.989563
-	dev: 56195 / 59955 = 0.937286
-	0:10:03.864564s elapsed
-max precision of dev is 0.938120 at epoch 29
-mean time of each epoch is 0:09:48.246697s
-Precision of test: 76319 / 81578 = 0.935534
-6:33:05.208475s elapsed
+train: 20454 / 20454 = 1.000000
+dev:   44739 / 50319 = 0.889107
+0:00:16.666659s elapsed
+
+max accuracy of dev is 0.889247 at epoch 12
+mean time of each epoch is 0:00:17.004330s
+
+0:05:06.874378s elapsed
 
